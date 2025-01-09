@@ -1,175 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stock Portfolio Management</title>
+    <title>My Website</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-
 <body>
-    <div id="app">
-        <div class="container py-4">
-            <h1 class="text-center mb-5">My Stock Dashboard</h1>
-
-            <!-- Create New Stock Section -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Add New Stock</h5>
-                    <div class="row g-3">
-                        <div class="col-md">
-                            <select v-model="newStock.user_id" class="form-select">
-                                <option value="null">Select a user</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    {{ user.username }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col-md">
-                            <input type="text" v-model="newStock.stock_code" class="form-control"
-                                placeholder="Stock Code">
-                        </div>
-                        <div class="col-md">
-                            <input type="number" v-model="newStock.buy_quantity" class="form-control"
-                                placeholder="Quantity">
-                        </div>
-                        <div class="col-md">
-                            <input type="number" v-model="newStock.buy_price" class="form-control" placeholder="Price">
-                        </div>
-                        <div class="col-md">
-                            <input type="date" v-model="newStock.buy_date" class="form-control">
-                        </div>
-                        <div class="col-md">
-                            <button @click="createStock" class="btn btn-primary w-100">Add Stock</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Search Stock Section -->
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Search Stocks</h5>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <select v-model="searchStock.user_id" class="form-select">
-                                <option value="null">Select a user</option>
-                                <option v-for="user in users" :key="user.id" :value="user.id">
-                                    {{ user.username }}
-                                </option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <input type="date" v-model="searchStock.endDate" class="form-control">
-                        </div>
-                        <div class="col-md-4">
-                            <button @click="fetchStocks" class="btn btn-primary w-100">Search Stocks</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading Spinner -->
-            <div class="text-center my-4" v-if="isLoading">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2">Loading data...</p>
-            </div>
-
-            <!-- Search Result Section -->
-            <div class="card shadow-sm" v-if="stocks.length">
-                <div class="card-body">
-                    <h5 class="card-title mb-3">Portfolio Summary</h5>
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Stock Code</th>
-                                    <th>Stock Name</th>
-                                    <th>Total Quantity</th>
-                                    <th>Average Buy Price</th>
-                                    <th>Current Price</th>
-                                    <th>Profit/Loss</th>
-                                    <th>Return Rate (%)</th>
-                                    <th>Cash Dividends</th>
-                                    <!-- <th>Action</th> -->
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr v-for="stock in stocks" :key="stock.summary.stock_code" @click="showDetails(stock)"
-                                    data-bs-toggle="modal" data-bs-target="#detailsModal" class="cursor-pointer">
-                                    <td>{{ stock.summary.stock_code }}</td>
-                                    <td>{{ stock.summary.stock_name }}</td>
-                                    <td class="text-end">{{ formatNumber(stock.summary.total_quantity) }}</td>
-                                    <td class="text-end">{{ formatNumber(stock.summary.buy_price) }}</td>
-                                    <td class="text-end">{{ formatNumber(stock.summary.current_price) }}</td>
-                                    <td class="text-end"
-                                        :class="{'text-success': stock.summary.profit_loss < 0, 'text-danger': stock.summary.profit_loss > 0}">
-                                        {{ formatNumber(stock.summary.profit_loss) }}
-                                    </td>
-                                    <td class="text-end"
-                                        :class="{'text-success': stock.summary.return_rate < 0, 'text-danger': stock.summary.return_rate > 0}">
-                                        {{ formatNumber((stock.summary.return_rate).toFixed(2)) }}%
-                                    </td>
-                                    <td class="text-end">{{ formatNumber(stock.summary.total_cash_dividends) }}</td>
-                                    <!-- <td>
-                                        <button @click="showDetails(stock)" class="btn btn-outline-primary btn-sm"
-                                            data-bs-toggle="modal" data-bs-target="#detailsModal">Details</button>
-                                    </td> -->
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Details Modal -->
-            <div class="modal fade" tabindex="-1" v-if="selectedStock" id="detailsModal">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">Transaction Details - {{ selectedStock.summary.stock_code }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="table-responsive">
-                                <table class="table table-bordered table-striped">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Buy Date</th>
-                                            <th class="text-end">Quantity</th>
-                                            <th class="text-end">Buy Price</th>
-                                            <th class="text-end">Total Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="detail in selectedStock.details" :key="detail.buy_date">
-                                            <td>{{ detail.buy_date }}</td>
-                                            <td class="text-end">{{ formatNumber(detail.buy_quantity) }}</td>
-                                            <td class="text-end">{{ formatNumber(detail.buy_price) }}</td>
-                                            <td class="text-end">{{ formatNumber(detail.buy_price * detail.buy_quantity)
-                                                }}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                            <!-- </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"
-                                @click="closeDetails">Close</button>
-                        </div> -->
-                        </div>
-                    </div>
-                </div>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">My Website</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="mystock.html">Stock</a>
+                    </li>
+                </ul>
             </div>
         </div>
-        <script src="app.js"></script>
-</body>
+    </nav>
 
+    <!-- Main content -->
+    <div class="container my-5">
+        <div class="row">
+            <div class="col text-center">
+                <h1>Welcome to My Website</h1>
+                <p class="lead">Your go-to platform for stock management and more.</p>
+                <a href="mystock.html" class="btn btn-primary btn-lg">Go to Stock Page</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-3">
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+    </footer>
+</body>
 </html>
