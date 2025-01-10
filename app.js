@@ -3,7 +3,7 @@ new Vue({
     el: '#app',
     data: {
         // url: 'http://127.0.0.1:8000',
-		url: 'https://mystock-chve.onrender.com',
+        url: 'https://mystock-chve.onrender.com',
         users: [],
         endDate: '',
         stocks: [],
@@ -27,6 +27,20 @@ new Vue({
     methods: {
         fetchUsers() {
             axios.get(this.url + '/users/')
+                .then(response => {
+                    this.users = response.data;
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                });
+        },
+        confirmDelete(id) {
+            if (confirm('Are you sure you want to delete this stock?')) {
+                this.deleteStock(id);
+            }
+        },
+        deleteStock(id) {
+            axios.delete(this.url + '/stocks/' + id + '/')
                 .then(response => {
                     this.users = response.data;
                 })
