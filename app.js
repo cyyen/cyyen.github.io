@@ -22,6 +22,7 @@ new Vue({
         }
     },
     mounted() {
+        axios.defaults.withCredentials = true;
         this.fetchUsers();
         this.fetchStocks();
 
@@ -29,6 +30,7 @@ new Vue({
     methods: {
         fetchUsers() {
             // console.log('fetchUsers');
+            axios.defaults.withCredentials = true;
             axios.get(this.url + '/users/')
                 .then(response => {
                     this.users = response.data;
@@ -44,6 +46,7 @@ new Vue({
             }
         },
         deleteStock(id) {
+            axios.defaults.withCredentials = true;
             axios.delete(this.url + '/stocks/' + id + '/')
                 .then(response => {
                     this.fetchStocks();
@@ -58,6 +61,7 @@ new Vue({
                 alert('Please select a user first');
                 return;
             }
+            axios.defaults.withCredentials = true;
             axios.post(this.url + '/stocks/', this.newStock)
                 .then(response => {
                     alert('Stock added successfully');
@@ -94,7 +98,7 @@ new Vue({
             if (this.searchStock.endDate) {
                 url += `end_date=${this.searchStock.endDate}`;
             }
-
+            axios.defaults.withCredentials = true;
             axios.get(url)
                 .then(response => {
                     this.stocks = response.data;
