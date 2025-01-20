@@ -106,8 +106,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="stock in stocks" :key="stock.summary.stock_code" @click="showDetails(stock)"
-                                    data-bs-toggle="modal" data-bs-target="#detailsModal" class="cursor-pointer">
+                                <tr v-for="stock in stocks" :key="stock.summary.stock_code"
+                                    @click="showDetails(stock.summary.stock_code)" data-bs-toggle="modal"
+                                    data-bs-target="#detailsModal" class="cursor-pointer">
                                     <td>{{ stock.summary.stock_code }}</td>
                                     <td>{{ stock.summary.stock_name }}</td>
                                     <td class="text-end">{{ formatNumber(stock.summary.total_quantity) }}</td>
@@ -134,7 +135,7 @@
             </div>
 
             <!-- Details Modal -->
-            <div class="modal fade" tabindex="-1" v-if="selectedStock" id="detailsModal">
+            <div class="modal fade" tabindex="-1" v-if="selectedStock" id="detailsModal" data-bs-backdrop="static">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
@@ -156,7 +157,7 @@
                                     </thead>
                                     <tbody>
                                         <tr v-for="detail in selectedStock.details" :key="detail.id">
-                                            <td>{{ detail.user_name }}</td>
+                                            <td>{{ detail.username }}</td>
                                             <td>{{ detail.buy_date }}</td>
                                             <td class="text-end">{{ formatNumber(detail.buy_quantity) }}</td>
                                             <td class="text-end">{{ formatNumber(detail.buy_price) }}</td>
